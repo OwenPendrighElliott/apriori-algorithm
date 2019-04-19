@@ -147,8 +147,8 @@ def print_rules(assoc_rules):
 
 def main():
     start = time.time()
-
-    dl = load_csv("stock_prices_2018.csv")
+    # Specify the .csv file to load
+    dl = load_csv("my_data.csv")
 
     min_sup = 0.1
     min_conf = 0.6
