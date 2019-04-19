@@ -16,7 +16,7 @@ def load_csv(filename):
         dl[idx] = t[1:]
     for t in dl:
         for i, v in enumerate(t):
-            t[i] = names[i] + "_" + str(v)
+            t[i] = names[i] + "_" + str(v)  # append column names to the values
     return dl
 
 
@@ -71,8 +71,7 @@ def apriori_gen(set_supports, min_conf):
 
 def find_freq(data, min_sup):
     """
-    Find all frequent itemsets using initial_freq to first find all frequent one item itemsets and then using
-    get_support to find the support for each itemset.
+    Find all frequent itemsets using initial_freq to first find all frequent one item itemsets.
     :param data: The data as a list of transactions
     :param min_sup: The minimum support
     :return: A dictionary where the key is the itemset and the value is its support
@@ -80,35 +79,20 @@ def find_freq(data, min_sup):
     # Find the one item itemsets
     initial_items = initial_freq(data, min_sup)
 
-    supersets = []
-    # generate all combinations of the frequent one item itemsets
-    
+    set_supports = {}
+    # generate all combinations of the frequent one item itemsets and check if they meet min_sup
     for i in range(1, len(initial_items)):
         combinations = itertools.combinations(list(initial_items), i)
         for c in combinations:
-            supersets.append(frozenset(c))
-    set_supports = get_support(data, supersets, min_sup)
+            c = frozenset(c)
+            count = 0
+            for tran in data:
+                if c.issubset(set(tran)):
+                    count += 1
+            support = float(count) / float(len(data))
+            if support >= min_sup:
+                set_supports[c] = support
     return set_supports
-
-
-def get_support(data, sets, min_sup):
-    """
-    calculate support for all frequent itemsets.
-    :param data: The data as a list of transactions
-    :param sets: All the frequent itemsets
-    :param min_sup: The minimum support
-    :return: A dictionary where the key is the itemset and the value is its support
-    """
-    set_support = {}
-    for s in sets:
-        count = 0
-        for tran in data:
-            if s.issubset(set(tran)):
-                count += 1
-        support = float(count)/float(len(data))
-        if support >= min_sup:
-            set_support[s] = support
-    return set_support
 
 
 def initial_freq(data, min_sup):
@@ -118,21 +102,21 @@ def initial_freq(data, min_sup):
     :param min_sup: The minimum support
     :return: A dictionary where with key is the single item itemset and the value is its support
     """
-    v_c = {}
+    i_s = {}
     for tran in data:
         for item in tran:
-            if item in v_c:
-                v_c[item] = v_c[item] + 1
+            if item in i_s:
+                i_s[item] = i_s[item] + 1
             else:
-                v_c[item] = 1
+                i_s[item] = 1
     to_del = []
-    for key in v_c:
-        sup = float(v_c[key]) / float(len(data))
+    for key in i_s:
+        sup = float(i_s[key]) / float(len(data))
         if sup < min_sup:
             to_del.append(key)
     for key in to_del:
-        del v_c[key]
-    return set(v_c.keys())
+        del i_s[key]
+    return set(i_s.keys())
 
 
 def print_itemsets(set_supports):
@@ -164,9 +148,9 @@ def print_rules(assoc_rules):
 def main():
     start = time.time()
 
-    dl = load_csv("my_data.csv")
+    dl = load_csv("stock_prices_2018.csv")
 
-    min_sup = 0.3
+    min_sup = 0.1
     min_conf = 0.6
     print("min_sup = " + str(min_sup))
     print("min_conf = " + str(min_conf))
