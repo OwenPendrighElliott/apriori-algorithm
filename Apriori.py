@@ -146,6 +146,10 @@ def print_rules(assoc_rules):
 
 
 def main():
+    """
+    The main where parameters are specified.
+    :return: None
+    """
     start = time.time()
     # Specify the .csv file to load
     dl = load_csv("my_data.csv")
